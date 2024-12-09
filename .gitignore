@@ -1,0 +1,4 @@
+*.xml
+/.pytest_cache
+/.vscode
+kit_busca/__pycache__
