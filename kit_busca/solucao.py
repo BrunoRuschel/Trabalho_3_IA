@@ -1,5 +1,5 @@
 from typing import Iterable, Set, Tuple
-
+import heapq
 
 class Nodo:
     """
@@ -26,6 +26,11 @@ class Nodo:
     def __hash__(self):
         """Retorna o hash do estado do nodo."""
         return hash(self.estado)
+
+    def __lt__(self, other):
+        # necessário porque heapq compara dois nodos se f é igual para mais de um nodo, na hora de
+        # inserir na fila de prioridades,
+        return self.custo < other.custo  # desempata pelo custo real
 
 
 def sucessor(estado: str) -> Set[Tuple[str, str]]:
@@ -80,6 +85,28 @@ def expande(nodo: Nodo) -> Set[Nodo]:
     return nodos_sucessores
 
 
+def distancia_hamming(estado: str) -> int:
+    objetivo = "12345678_"
+    distancia = 0
+    for i in range(len(objetivo)):
+        if objetivo[i] != estado[i] and estado[i] != "_":
+            distancia += 1
+    return distancia
+
+
+def reconstruir_caminho(nodo: Nodo) -> list[str]:
+    """reconstrói o caminho de ações do nó objetivo até o nó raiz"""
+    caminho = []
+
+    if nodo.pai is None:
+        return None
+
+    while nodo.pai is not None:
+        caminho.append(nodo.acao)
+        nodo = nodo.pai
+    return caminho[::-1]  # inverte o caminho
+
+
 def astar_hamming(estado: str) -> list[str]:
     """
     Recebe um estado (string), executa a busca A* com h(n) = soma das distâncias de Hamming e
@@ -89,8 +116,26 @@ def astar_hamming(estado: str) -> list[str]:
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    explorados = set()
+    fronteira = []
+    heapq.heappush(fronteira, (0, Nodo(estado, None, None, 0)))
+
+    while True:
+        if not fronteira:
+            return None
+        _, v = heapq.heappop(fronteira)
+
+        if v.estado == "12345678_":  # objetivo
+            return reconstruir_caminho(v)
+
+        if v not in explorados:
+            explorados.add(v)
+            sucessores = expande(v)
+            for nodo_sucessor in sucessores:
+                g = nodo_sucessor.custo
+                h = distancia_hamming(nodo_sucessor.estado)
+                f = g + h
+                heapq.heappush(fronteira, (f, nodo_sucessor))
 
 
 def astar_manhattan(estado: str) -> list[str]:

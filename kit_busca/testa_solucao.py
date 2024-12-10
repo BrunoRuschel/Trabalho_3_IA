@@ -67,6 +67,10 @@ class TestaSolucao(unittest.TestCase):
         # nao ha solucao a partir do estado 185423_67
         self.assertIsNone(self.run_algorithm(solucao.astar_hamming, "185423_67"))
 
+        self.assertEqual(None, self.run_algorithm(solucao.astar_hamming, "12345678_"))
+        self.assertEqual(18, len(self.run_algorithm(solucao.astar_hamming, "17_425836")))
+        self.assertEqual(16, len(self.run_algorithm(solucao.astar_hamming, "43652871_")))
+
     def test_run_astar_manhattan(self):
         """
         Testa o A* com dist. Manhattan em um estado com solução e outro sem solução.
