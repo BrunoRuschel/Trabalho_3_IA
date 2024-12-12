@@ -138,6 +138,19 @@ def astar_hamming(estado: str) -> list[str]:
                 heapq.heappush(fronteira, (f, nodo_sucessor))
 
 
+def manhattan(estado: str) -> int:
+    """
+    Calcula a soma das distâncias de Manhattan de todas as peças do estado.
+    A distância Manhattan é a soma das distâncias verticais e horizontais
+    de cada peça até a posição correta.
+    """
+
+    objetivo = "12345678_"
+    return sum(
+        abs(i // 3 - objetivo.index(char) // 3) + abs(i % 3 - objetivo.index(char) % 3)
+        for i, char in enumerate(estado) if char != '_'
+    )
+
 def astar_manhattan(estado: str) -> list[str]:
     """
     Recebe um estado (string), executa a busca A* com h(n) = soma das distâncias de Manhattan e
@@ -148,7 +161,37 @@ def astar_manhattan(estado: str) -> list[str]:
     :return:
     """
     # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    objetivo = "12345678_"
+
+    if estado == objetivo:
+        return []
+
+    fronteira = []
+    estados_explorados = set()
+    heapq.heappush(fronteira, (manhattan(estado), Nodo(estado, None, None, 0)))
+
+    while fronteira:
+        _, nodo_atual = heapq.heappop(fronteira)
+
+        if nodo_atual.estado in estados_explorados:
+            continue
+        estados_explorados.add(nodo_atual.estado)
+
+        if nodo_atual.estado == objetivo:
+            caminho = []
+            while nodo_atual.pai is not None:
+                caminho.insert(0, nodo_atual.acao)
+                nodo_atual = nodo_atual.pai
+            return caminho
+
+        for acao, estado_sucessor in sucessor(nodo_atual.estado):
+            if estado_sucessor not in estados_explorados:
+                custo = nodo_atual.custo + 1
+                nodo_sucessor = Nodo(estado_sucessor, nodo_atual, acao, custo)
+                f = custo + manhattan(estado_sucessor)
+                heapq.heappush(fronteira, (f, nodo_sucessor))
+
+    return None
 
 
 # opcional,extra
